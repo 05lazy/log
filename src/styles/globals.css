@@ -7,5 +7,5 @@ ul {
 }
 
 body {
-  @apply dark:text-gray-300 leading-7;
+  @apply dark:text-gray-300;
 }
