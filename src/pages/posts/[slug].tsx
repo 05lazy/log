@@ -1,49 +1,50 @@
-import { getAllPosts, getPostBySlug } from "@/apis/api";
-import markdownToHtml from "@/apis/markdownToHtml";
-import { Svg } from "@/assets";
+import { Back } from "@/components/Back";
 import { Utterances } from "@/components/Utterances";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { PostBody } from "@/components/post/PostBody";
-import { Thumbnail } from "@/components/post/Thumbnail";
+import { getPostBySlug, postFilePaths } from "@/utils/mdx-utils";
 import Head from "next/head";
-import Image from "next/image";
-import Link from "next/link";
+import { MDXRemote } from "next-mdx-remote";
+import { CustomLink } from "@/components/post/CustomLink";
 
-type Props = {
-  post: {
-    content: string;
-    date: string;
-    slug: string;
-    title: string;
-    thumbnail?: string;
-  };
+const components = {
+  a: CustomLink,
+  Head,
 };
 
-export default ({ post }: Props) => {
+interface Props {
+  frontMatter: {
+    date: string;
+    title: string;
+  };
+  source: {
+    compiledSource: string;
+    frontmatter: {};
+    scope: {
+      date: string;
+      title: string;
+    };
+  };
+}
+
+export default ({ frontMatter, source }: Props) => {
   return (
     <>
       <Head>
-        <title>{post.title}</title>
-        <link
-          href={`https://unpkg.com/prismjs@0.0.1/themes/prism-tomorrow.css`}
-          rel='stylesheet'
-        />
+        <title>{frontMatter.title}</title>
+        <meta property='og:title' content={frontMatter.title} />
       </Head>
       <Header />
       <div className='max-w-[632px] px-4 m-auto mb-40'>
-        <Link
-          href={"/"}
-          className='flex gap-3 items-center text-lg mt-11 hover:opacity-60'
-        >
-          <Svg.Arrow />
-          뒤로가기
-        </Link>
-        {post.thumbnail && <Thumbnail url={post.thumbnail} />}
-        <h1 className='text-4xl mb-3 mt-6'>{post.title}</h1>
-        <time className='text-xl text-[#8B95A1]'>{post.date}</time>
-        <hr className='mt-10' />
-        <PostBody content={post.content} />
+        <Back />
+        <h1 className='text-4xl mb-3 mt-6 dark:text-gray-200'>
+          {frontMatter.title}
+        </h1>
+        <time className='text-xl dark:text-gray-400'>{frontMatter.date}</time>
+        <hr className='my-10' />
+        <article className='prose dark:prose-dark'>
+          <MDXRemote {...source} components={components} />
+        </article>
         <Utterances />
       </div>
       <Footer />
@@ -51,43 +52,26 @@ export default ({ post }: Props) => {
   );
 };
 
-type Params = {
-  params: {
-    slug: string;
-  };
-};
-
-export async function getStaticProps({ params }: Params) {
-  const post = getPostBySlug(params.slug, [
-    "title",
-    "date",
-    "slug",
-    "content",
-    "thumbnail",
-  ]);
-  const content = await markdownToHtml(post.content || "");
+export const getStaticProps = async ({ params }) => {
+  const { mdxSource, data } = await getPostBySlug(params.slug);
 
   return {
     props: {
-      post: {
-        ...post,
-        content,
-      },
+      source: mdxSource,
+      frontMatter: data,
     },
   };
-}
+};
 
-export async function getStaticPaths() {
-  const posts = getAllPosts(["slug"]);
+export const getStaticPaths = async () => {
+  const paths = postFilePaths
+    // Remove file extensions for page paths
+    .map((path) => path.replace(/\.mdx?$/, ""))
+    // Map the path into the static paths object required by Next.js
+    .map((slug) => ({ params: { slug } }));
 
   return {
-    paths: posts.map((post) => {
-      return {
-        params: {
-          slug: post.slug,
-        },
-      };
-    }),
+    paths,
     fallback: false,
   };
-}
+};

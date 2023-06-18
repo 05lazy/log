@@ -1,30 +1,28 @@
-import { getAllPosts } from "@/apis/api";
 import { Title } from "@/components/Title";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { Preview } from "@/components/post/Preview";
 import { Search } from "@/components/search";
+import { getPosts } from "@/utils/mdx-utils";
 import { useState } from "react";
 
-export interface allPosts {
-  date: string;
-  title: string;
-  slug: string;
+export interface Post {
+  content: string;
+  data: { title: string; date: string };
+  filePath: string;
 }
 
-interface Props {
-  allPosts: allPosts[];
-}
-
-export default ({ allPosts }: Props) => {
+export default (allPosts: { posts: Post[] }) => {
   const [search, setSearch] = useState<string>("");
 
-  const searchedPost = allPosts.filter((post) => post.title.includes(search));
+  const searchedPost = allPosts.posts.filter((post) =>
+    post.data.title.includes(search)
+  );
 
   return (
     <main>
       <Header />
-      <div className='flex flex-col gap-6 max-w-[632px] px-4 m-auto min-h-screen'>
+      <div className='flex flex-col gap-6 max-w-[632px] px-4 m-auto'>
         <Title>
           All Posts
           <Search onChange={(e) => setSearch(e.target.value)} />
@@ -38,16 +36,8 @@ export default ({ allPosts }: Props) => {
   );
 };
 
-export const getStaticProps = async () => {
-  const allPosts = getAllPosts([
-    "title",
-    "date",
-    "slug",
-    "coverImage",
-    "excerpt",
-  ]);
+export function getStaticProps() {
+  const posts = getPosts();
 
-  return {
-    props: { allPosts },
-  };
-};
+  return { props: { posts } };
+}

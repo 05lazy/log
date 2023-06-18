@@ -5,7 +5,7 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {}
 
 export const Search = ({ onChange }: Props) => {
   return (
-    <div className='relative max-w-96 text-base font-medium mt-8'>
+    <div className='relative max-w-sm text-base font-medium mt-8'>
       <input
         onChange={onChange}
         className='py-2 px-4 border border-gray-300 rounded-md w-full'
