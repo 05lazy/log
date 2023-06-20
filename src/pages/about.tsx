@@ -20,7 +20,7 @@ export default () => {
           </div>
           <WithTitle title='Work Expreience'>
             <div className='text-xl'>아우름플래닛</div>
-            <div>2022-07 ~ 현재</div>
+            <div>2023-07 ~ 현재</div>
           </WithTitle>
           <WithTitle className='flex flex-col gap-10' title='Project'>
             <div>
